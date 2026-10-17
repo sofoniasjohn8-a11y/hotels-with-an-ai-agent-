@@ -4,6 +4,12 @@ import inertia from '@inertiajs/vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 
+// Base44 sandbox: advertise the externally-reachable Vite dev server origin so
+// the browser (behind the preview proxy) can load dev assets and use HMR.
+// Gated on BASE44_PREVIEW_MODE so the original behavior is unchanged when unset.
+const previewMode = process.env.BASE44_PREVIEW_MODE === '1';
+const devOrigin = previewMode ? process.env.VITE_DEV_SERVER_ORIGIN : undefined;
+
 export default defineConfig({
     plugins: [
         laravel({
@@ -15,6 +21,11 @@ export default defineConfig({
         tailwindcss(),
     ],
     server: {
+        origin: devOrigin,
+        // In the sandbox, the page (port 3000) loads assets from the Vite dev
+        // server (port 5173) cross-origin. Reflect the request origin so the
+        // browser's CORS check passes. Original cors defaults are kept when unset.
+        cors: previewMode ? { origin: true } : undefined,
         watch: {
             ignored: ['**/storage/framework/views/**'],
         },
