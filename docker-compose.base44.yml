@@ -1,0 +1,26 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.base44
+    ports:
+      - "3000:3000"
+      - "5173:5173"
+    volumes:
+      - .:/var/www/html
+    environment:
+      - BASE44_PREVIEW_MODE=1
+      - BASE44_PUBLIC_HOST_SUFFIX=${BASE44_PUBLIC_HOST_SUFFIX:-}
+      - BASE44_SANDBOX_HOST_DOMAIN=${BASE44_SANDBOX_HOST_DOMAIN:-}
+      # Let Vite accept the preview proxy's external hostname
+      - __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS
+      # Tell the Laravel Vite plugin the externally-reachable dev server origin
+      - VITE_DEV_SERVER_ORIGIN=https://5173-${BASE44_PUBLIC_HOST_SUFFIX:-localhost}
+    command: ["bash", "/var/www/html/.base44/start.sh"]
+    restart: on-failure
+    healthcheck:
+      test: ["CMD", "sh", "-c", "curl -fsS http://127.0.0.1:3000/ >/dev/null 2>&1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 90s
