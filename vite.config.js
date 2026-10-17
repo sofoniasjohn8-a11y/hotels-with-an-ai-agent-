@@ -22,6 +22,10 @@ export default defineConfig({
     ],
     server: {
         origin: devOrigin,
+        // In the sandbox, the page (port 3000) loads assets from the Vite dev
+        // server (port 5173) cross-origin. Reflect the request origin so the
+        // browser's CORS check passes. Original cors defaults are kept when unset.
+        cors: previewMode ? { origin: true } : undefined,
         watch: {
             ignored: ['**/storage/framework/views/**'],
         },
